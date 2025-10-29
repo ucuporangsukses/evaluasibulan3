@@ -1,4 +1,4 @@
-
+import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ProductProvider } from "./contexts/ProductContext";
@@ -8,8 +8,8 @@ import { Products } from "./pages/Products";
 import { ProductDetail } from "./pages/ProductDetail";
 import { Login } from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
+import { Cart } from "./pages/Cart";
 import { Navbar } from "./components/Navbar";
-import { Cart } from "./pages/Cart"; // ⬅️ Tambahin ini bro!!
 import type { ReactNode } from "react";
 
 const PrivateRoute = ({ children }: { children: ReactNode }) => {
@@ -17,29 +17,33 @@ const PrivateRoute = ({ children }: { children: ReactNode }) => {
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
 };
 
-export const App = () => (
-  <Router>
-    <AuthProvider>
-      <ProductProvider>
-        <CartProvider> {/* ⬅️ Bungkus biar cart global */}
-          <Navbar />
-          <Routes>
-            <Route path="/" element={<Navigate to="/products" />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/products/:id" element={<ProductDetail />} />
-            <Route path="/login" element={<Login />} />
-            <Route
-              path="/dashboard"
-              element={
-                <PrivateRoute>
-                  <Dashboard />
-                </PrivateRoute>
-              }
-            />
-            <Route path="/cart" element={<Cart />} /> {/* ⬅️ INI DIA BRE!!! */}
-          </Routes>
-        </CartProvider>
-      </ProductProvider>
-    </AuthProvider>
-  </Router>
-);
+export const App = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  return (
+    <Router>
+      <AuthProvider>
+        <ProductProvider>
+          <CartProvider>
+            <Navbar onSearch={setSearchQuery} />
+            <Routes>
+              <Route path="/" element={<Navigate to="/products" />} />
+              <Route path="/products" element={<Products searchQuery={searchQuery} />} />
+              <Route path="/products/:id" element={<ProductDetail />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <PrivateRoute>
+                    <Dashboard />
+                  </PrivateRoute>
+                }
+              />
+            </Routes>
+          </CartProvider>
+        </ProductProvider>
+      </AuthProvider>
+    </Router>
+  );
+};

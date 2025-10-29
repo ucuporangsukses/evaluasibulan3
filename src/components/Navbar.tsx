@@ -1,34 +1,41 @@
-import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { useCart } from "../contexts/CartContext"; // <-- import cart
+import { useCart } from "../contexts/CartContext";
 
-export const Navbar: React.FC = () => {
+interface NavbarProps {
+  onSearch: (query: string) => void;
+}
+
+export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
   const { isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
-  const { cart } = useCart(); // <-- ambil cart
+  const { cart } = useCart(); 
 
-  // hitung total item
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    onSearch(query);
+    navigate("/products"); // auto ke halaman products
+  };
 
   return (
-    <nav className="bg-gray-800 text-white p-4 flex justify-between items-center">
-      <div className="flex gap-4">
-        <NavLink
-          to="/products"
-          className={({ isActive }) => (isActive ? "text-yellow-400" : "")}
-        >
-          Products
-        </NavLink>
-        {isAuthenticated && (
-          <NavLink
-            to="/dashboard"
-            className={({ isActive }) => (isActive ? "text-yellow-400" : "")}
-          >
-            Dashboard
-          </NavLink>
-        )}
+    <nav className="bg-gray-800 text-white p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="text-xl font-bold cursor-pointer" onClick={() => navigate("/products")}>
+        MyShop
       </div>
+
+      {/* Search Bar */}
+      <input
+        type="text"
+        placeholder="Cari produk..."
+        value={searchQuery}
+        onChange={handleSearchChange}
+        className="flex-1 max-w-xl p-2 rounded border border-gray-300 focus:outline-none mx-4"
+      />
 
       <div className="flex items-center gap-4">
         {/* Cart icon */}
@@ -38,7 +45,6 @@ export const Navbar: React.FC = () => {
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M3 3h2l.4 2M7 13h14l-1.35 6.75a1 1 0 01-.99.75H7.34a1 1 0 01-.99-.75L5 6H3"
@@ -51,7 +57,6 @@ export const Navbar: React.FC = () => {
           )}
         </div>
 
-        {/* Login/Logout */}
         {isAuthenticated ? (
           <button
             onClick={() => {
